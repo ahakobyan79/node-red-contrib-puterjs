@@ -1,0 +1,22 @@
+<script type="text/javascript">
+    RED.nodes.registerType('puterjs', {
+        category: 'function',
+        color: '#a6bbcf',
+        defaults: {
+            name: { value: "" }
+        },
+        inputs: 1,
+        outputs: 1,
+        icon: "font-awesome/fa-cog",
+        label: function() {
+            return this.name || "puter.js node";
+        }
+    });
+</script>
+
+<div class="form-row">
+    <label for="node-input-name">
+        <i class="fa fa-tag"></i> Name
+    </label>
+    <input type="text" id="node-input-name" placeholder="Node name">
+</div>

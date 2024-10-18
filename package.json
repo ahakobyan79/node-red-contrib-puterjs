@@ -1,0 +1,31 @@
+{
+  "name": "red-contrib-puterjs",
+  "version": "1.0.0",
+  "description": "A Node-RED node to integrate Puter.js functionalities",
+  "main": "src/puterjs.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ahakobyan79/node-red-contrib-puterjs.git"
+  },
+  "keywords": [
+    "node-red",
+    "puterjs",
+    "AI",
+    "auth",
+    "cloud"
+  ],
+  "node-red": {
+    "nodes": {
+      "puterjs": "src/puterjs.js"
+    }
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ahakobyan79/node-red-contrib-puterjs/issues"
+  },
+  "homepage": "https://github.com/ahakobyan79/node-red-contrib-puterjs#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
