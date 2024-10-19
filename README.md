@@ -1,14 +1,12 @@
-# Node-RED Contrib Puter.js
+# node-red-contrib-puterjs
 
-This Node-RED node integrates Puter.js, allowing you to use cloud, AI, and authentication functionalities directly in Node-RED without backend code.
+This Node-RED node integrates Puter.js functionalities into Node-RED workflows. You can use the following services:
 
-## Features
-- **AI Tools**: Use GPT-4 mini chat (`puter.ai.chat`).
-- **File System**: Interact with cloud storage (`puter.fs.write`, `puter.fs.read`).
-- **Authentication**: Manage user sessions (`puter.auth.signIn`, `puter.auth.signOut`).
+- **AI chat**: Leverage GPT models directly from Node-RED.
+- **File storage**: Interact with Puter.js file storage API.
+- **Hosting**: Publish content directly from your flows.
 
-## Installation
-To install, run the following command in your Node-RED user directory (typically `~/.node-red`):
+### Install
 
-```bash
-npm install /path/to/your/local/folder
+To install this node, run the following command:
+
