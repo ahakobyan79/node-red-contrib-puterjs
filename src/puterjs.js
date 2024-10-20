@@ -1,71 +1,72 @@
+const axios = require('axios');
+
 module.exports = function(RED) {
     function PuterJSNode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
-        
-        // Load the Puter.js script
-        const script = document.createElement('script');
-        script.src = 'https://js.puter.com/v2/';
-        document.head.appendChild(script);
 
-        script.onload = function() {
-            node.status({fill:"green", shape:"dot", text:"Puter.js loaded"});
-        };
+        // Store the credentials
+        this.username = this.credentials.username;
+        this.password = this.credentials.password;
 
-        script.onerror = function() {
-            node.status({fill:"red", shape:"ring", text:"Failed to load Puter.js"});
-        };
+        // Function to make authenticated API calls
+        async function makeApiCall(endpoint, method, data) {
+            try {
+                const response = await axios({
+                    method: method,
+                    url: `https://api.puter.com/v1${endpoint}`,
+                    auth: {
+                        username: node.username,
+                        password: node.password
+                    },
+                    data: data
+                });
+                return response.data;
+            } catch (error) {
+                throw error;
+            }
+        }
 
-        node.on('input', function(msg) {
+        node.on('input', async function(msg) {
             const action = config.action;
             const params = msg.payload;
 
-            if (action === 'authenticate') {
-                puter.auth.signIn().then((res) => {
-                    msg.payload = res;
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("Authentication failed: " + error);
-                });
-            } else if (action === 'chat') {
-                puter.ai.chat(params.prompt).then((response) => {
-                    msg.payload = response;
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("Chat failed: " + error);
-                });
-            } else if (action === 'writeFile') {
-                puter.fs.write(params.filename, params.content).then((file) => {
-                    msg.payload = file;
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("File write failed: " + error);
-                });
-            } else if (action === 'readFile') {
-                puter.fs.read(params.filename).then(async (blob) => {
-                    msg.payload = await blob.text();
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("File read failed: " + error);
-                });
-            } else if (action === 'setKV') {
-                puter.kv.set(params.key, params.value).then(() => {
-                    msg.payload = { success: true };
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("KV set failed: " + error);
-                });
-            } else if (action === 'getKV') {
-                puter.kv.get(params.key).then((value) => {
-                    msg.payload = value;
-                    node.send(msg);
-                }).catch((error) => {
-                    node.error("KV get failed: " + error);
-                });
-            } else {
-                node.error("Unknown action: " + action);
+            try {
+                switch(action) {
+                    case 'writeFile':
+                        msg.payload = await makeApiCall('/fs/write', 'POST', {
+                            path: params.filename,
+                            content: params.content
+                        });
+                        break;
+                    case 'readFile':
+                        msg.payload = await makeApiCall(`/fs/read?path=${params.filename}`, 'GET');
+                        break;
+                    case 'setKV':
+                        msg.payload = await makeApiCall('/kv/set', 'POST', {
+                            key: params.key,
+                            value: params.value
+                        });
+                        break;
+                    case 'getKV':
+                        msg.payload = await makeApiCall(`/kv/get?key=${params.key}`, 'GET');
+                        break;
+                    default:
+                        throw new Error("Unknown action: " + action);
+                }
+                node.send(msg);
+                node.status({fill:"green", shape:"dot", text:"Success"});
+            } catch (error) {
+                node.error(error.message);
+                node.status({fill:"red", shape:"ring", text: error.message});
             }
         });
     }
-    RED.nodes.registerType("puterjs", PuterJSNode);
+
+    RED.nodes.registerType("puterjs", PuterJSNode, {
+        credentials: {
+            username: {type: "text"},
+            password: {type: "password"}
+        }
+    });
 }
