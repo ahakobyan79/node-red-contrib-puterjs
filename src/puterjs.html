@@ -6,10 +6,6 @@
             name: {value:""},
             action: {value:"", required:true}
         },
-        credentials: {
-            username: {type: "text"},
-            password: {type: "password"}
-        },
         inputs:1,
         outputs:1,
         icon: "file.png",
@@ -27,24 +23,21 @@
     <div class="form-row">
         <label for="node-input-action"><i class="fa fa-tasks"></i> Action</label>
         <select id="node-input-action">
-            <option value="writeFile">Write File</option>
-            <option value="readFile">Read File</option>
+            <option value="write">Write File</option>
+            <option value="read">Read File</option>
+            <option value="mkdir">Make Directory</option>
+            <option value="readdir">Read Directory</option>
+            <option value="rename">Rename</option>
+            <option value="delete">Delete</option>
             <option value="setKV">Set Key-Value</option>
             <option value="getKV">Get Key-Value</option>
+            <option value="chat">AI Chat</option>
         </select>
-    </div>
-    <div class="form-row">
-        <label for="node-input-username"><i class="fa fa-user"></i> Username</label>
-        <input type="text" id="node-input-username">
-    </div>
-    <div class="form-row">
-        <label for="node-input-password"><i class="fa fa-lock"></i> Password</label>
-        <input type="password" id="node-input-password">
     </div>
 </script>
 
 <script type="text/html" data-help-name="puterjs">
-    <p>A node to interact with Puter API.</p>
+    <p>A node to interact with Puter.js API.</p>
     <h3>Inputs</h3>
     <dl class="message-properties">
         <dt>payload
@@ -57,15 +50,8 @@
         <dt>payload
             <span class="property-type">object</span>
         </dt>
-        <dd>The result of the Puter API call.</dd>
+        <dd>The result of the Puter.js API call.</dd>
     </dl>
     <h3>Details</h3>
-    <p>This node allows you to interact with various Puter API functions:</p>
-    <ul>
-        <li><b>Write File:</b> Write content to a file in Puter cloud storage</li>
-        <li><b>Read File:</b> Read content from a file in Puter cloud storage</li>
-        <li><b>Set Key-Value:</b> Set a key-value pair in Puter key-value store</li>
-        <li><b>Get Key-Value:</b> Get a value from Puter key-value store</li>
-    </ul>
-    <p>Enter your Puter username and password in the node configuration.</p>
+    <p>This node allows you to interact with various Puter.js API functions. Make sure you're authenticated with Puter before using this node.</p>
 </script>

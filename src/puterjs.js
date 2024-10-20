@@ -1,31 +1,20 @@
-const axios = require('axios');
-
 module.exports = function(RED) {
     function PuterJSNode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
 
-        // Store the credentials
-        this.username = this.credentials.username;
-        this.password = this.credentials.password;
+        // Load the Puter.js script
+        const script = document.createElement('script');
+        script.src = 'https://js.puter.com/v2/';
+        document.head.appendChild(script);
 
-        // Function to make authenticated API calls
-        async function makeApiCall(endpoint, method, data) {
-            try {
-                const response = await axios({
-                    method: method,
-                    url: `https://api.puter.com/v1${endpoint}`,
-                    auth: {
-                        username: node.username,
-                        password: node.password
-                    },
-                    data: data
-                });
-                return response.data;
-            } catch (error) {
-                throw error;
-            }
-        }
+        script.onload = function() {
+            node.status({fill:"green", shape:"dot", text:"Puter.js loaded"});
+        };
+
+        script.onerror = function() {
+            node.status({fill:"red", shape:"ring", text:"Failed to load Puter.js"});
+        };
 
         node.on('input', async function(msg) {
             const action = config.action;
@@ -33,23 +22,33 @@ module.exports = function(RED) {
 
             try {
                 switch(action) {
-                    case 'writeFile':
-                        msg.payload = await makeApiCall('/fs/write', 'POST', {
-                            path: params.filename,
-                            content: params.content
-                        });
+                    case 'write':
+                        msg.payload = await puter.fs.write(params.path, params.content);
                         break;
-                    case 'readFile':
-                        msg.payload = await makeApiCall(`/fs/read?path=${params.filename}`, 'GET');
+                    case 'read':
+                        const blob = await puter.fs.read(params.path);
+                        msg.payload = await blob.text();
+                        break;
+                    case 'mkdir':
+                        msg.payload = await puter.fs.mkdir(params.path);
+                        break;
+                    case 'readdir':
+                        msg.payload = await puter.fs.readdir(params.path);
+                        break;
+                    case 'rename':
+                        msg.payload = await puter.fs.rename(params.path, params.newName);
+                        break;
+                    case 'delete':
+                        msg.payload = await puter.fs.delete(params.path);
                         break;
                     case 'setKV':
-                        msg.payload = await makeApiCall('/kv/set', 'POST', {
-                            key: params.key,
-                            value: params.value
-                        });
+                        msg.payload = await puter.kv.set(params.key, params.value);
                         break;
                     case 'getKV':
-                        msg.payload = await makeApiCall(`/kv/get?key=${params.key}`, 'GET');
+                        msg.payload = await puter.kv.get(params.key);
+                        break;
+                    case 'chat':
+                        msg.payload = await puter.ai.chat(params.prompt);
                         break;
                     default:
                         throw new Error("Unknown action: " + action);
@@ -63,10 +62,5 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("puterjs", PuterJSNode, {
-        credentials: {
-            username: {type: "text"},
-            password: {type: "password"}
-        }
-    });
+    RED.nodes.registerType("puterjs", PuterJSNode);
 }
