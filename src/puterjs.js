@@ -1,39 +1,50 @@
+const axios = require('axios');
+
 module.exports = function(RED) {
     function PuterJSNode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
-        
+
         // Store the credentials
         this.username = this.credentials.username;
         this.password = this.credentials.password;
 
-        // Load the Puter.js script
-        const script = document.createElement('script');
-        script.src = 'https://js.puter.com/v2/';
-        document.head.appendChild(script);
-
-        script.onload = function() {
-            node.status({fill:"green", shape:"dot", text:"Puter.js loaded"});
-        };
-
-        script.onerror = function() {
-            node.status({fill:"red", shape:"ring", text:"Failed to load Puter.js"});
-        };
-
-        // Store authentication status
-        let isAuthenticated = false;
+        // Store authentication token
+        let authToken = null;
 
         async function authenticate() {
             try {
-                // Here, we would use the username and password to authenticate
-                // However, Puter.js doesn't seem to have a direct method for this
-                // We might need to simulate a login or use a different API
-                await puter.auth.signIn();
-                isAuthenticated = true;
+                const response = await axios.post('https://api.puter.com/v1/auth/login', {
+                    username: node.username,
+                    password: node.password
+                });
+                authToken = response.data.token;
                 node.status({fill:"green", shape:"dot", text:"Authenticated"});
             } catch (error) {
                 node.error("Authentication failed: " + error.message);
                 node.status({fill:"red", shape:"ring", text:"Auth failed"});
+                throw error;
+            }
+        }
+
+        async function makeApiCall(endpoint, method, data) {
+            if (!authToken) {
+                await authenticate();
+            }
+            try {
+                const response = await axios({
+                    method: method,
+                    url: `https://api.puter.com/v1${endpoint}`,
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    data: data
+                });
+                return response.data;
+            } catch (error) {
+                if (error.response && error.response.status === 401) {
+                    // Token might be expired, try to authenticate again
+                    await authenticate();
+                    return makeApiCall(endpoint, method, data);
+                }
                 throw error;
             }
         }
@@ -43,38 +54,41 @@ module.exports = function(RED) {
             const params = msg.payload;
 
             try {
-                if (!isAuthenticated) {
-                    await authenticate();
-                }
-
                 switch(action) {
                     case 'write':
-                        msg.payload = await puter.fs.write(params.path, params.content);
+                        msg.payload = await makeApiCall('/fs/write', 'POST', {
+                            path: params.path,
+                            content: params.content
+                        });
                         break;
                     case 'read':
-                        const blob = await puter.fs.read(params.path);
-                        msg.payload = await blob.text();
+                        msg.payload = await makeApiCall(`/fs/read?path=${params.path}`, 'GET');
                         break;
                     case 'mkdir':
-                        msg.payload = await puter.fs.mkdir(params.path);
+                        msg.payload = await makeApiCall('/fs/mkdir', 'POST', {
+                            path: params.path
+                        });
                         break;
                     case 'readdir':
-                        msg.payload = await puter.fs.readdir(params.path);
+                        msg.payload = await makeApiCall(`/fs/readdir?path=${params.path}`, 'GET');
                         break;
                     case 'rename':
-                        msg.payload = await puter.fs.rename(params.path, params.newName);
+                        msg.payload = await makeApiCall('/fs/rename', 'POST', {
+                            path: params.path,
+                            newName: params.newName
+                        });
                         break;
                     case 'delete':
-                        msg.payload = await puter.fs.delete(params.path);
+                        msg.payload = await makeApiCall(`/fs/delete?path=${params.path}`, 'DELETE');
                         break;
                     case 'setKV':
-                        msg.payload = await puter.kv.set(params.key, params.value);
+                        msg.payload = await makeApiCall('/kv/set', 'POST', {
+                            key: params.key,
+                            value: params.value
+                        });
                         break;
                     case 'getKV':
-                        msg.payload = await puter.kv.get(params.key);
-                        break;
-                    case 'chat':
-                        msg.payload = await puter.ai.chat(params.prompt);
+                        msg.payload = await makeApiCall(`/kv/get?key=${params.key}`, 'GET');
                         break;
                     default:
                         throw new Error("Unknown action: " + action);
