@@ -1,6 +1,6 @@
 {
     "name": "node-red-contrib-puterjs",
-    "version": "0.1.0",
+    "version": "2.1.0",
     "description": "Node-RED node for Puter.js API integration",
     "dependencies": {
         "axios": "^0.21.1"
