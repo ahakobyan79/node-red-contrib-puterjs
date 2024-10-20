@@ -2,6 +2,10 @@ module.exports = function(RED) {
     function PuterJSNode(config) {
         RED.nodes.createNode(this, config);
         var node = this;
+        
+        // Store the credentials
+        this.username = this.credentials.username;
+        this.password = this.credentials.password;
 
         // Load the Puter.js script
         const script = document.createElement('script');
@@ -16,11 +20,33 @@ module.exports = function(RED) {
             node.status({fill:"red", shape:"ring", text:"Failed to load Puter.js"});
         };
 
+        // Store authentication status
+        let isAuthenticated = false;
+
+        async function authenticate() {
+            try {
+                // Here, we would use the username and password to authenticate
+                // However, Puter.js doesn't seem to have a direct method for this
+                // We might need to simulate a login or use a different API
+                await puter.auth.signIn();
+                isAuthenticated = true;
+                node.status({fill:"green", shape:"dot", text:"Authenticated"});
+            } catch (error) {
+                node.error("Authentication failed: " + error.message);
+                node.status({fill:"red", shape:"ring", text:"Auth failed"});
+                throw error;
+            }
+        }
+
         node.on('input', async function(msg) {
             const action = config.action;
             const params = msg.payload;
 
             try {
+                if (!isAuthenticated) {
+                    await authenticate();
+                }
+
                 switch(action) {
                     case 'write':
                         msg.payload = await puter.fs.write(params.path, params.content);
@@ -62,5 +88,10 @@ module.exports = function(RED) {
         });
     }
 
-    RED.nodes.registerType("puterjs", PuterJSNode);
+    RED.nodes.registerType("puterjs", PuterJSNode, {
+        credentials: {
+            username: {type: "text"},
+            password: {type: "password"}
+        }
+    });
 }
