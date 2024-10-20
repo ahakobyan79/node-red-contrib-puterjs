@@ -1,22 +1,69 @@
 <script type="text/javascript">
-    RED.nodes.registerType('puterjs', {
-        category: 'function',
+    RED.nodes.registerType('puterjs',{
+        category: 'Puter',
         color: '#a6bbcf',
         defaults: {
-            name: { value: "" }
+            name: {value:""},
+            action: {value:"", required:true}
         },
-        inputs: 1,
-        outputs: 1,
-        icon: "font-awesome/fa-cog",
+        inputs:1,
+        outputs:1,
+        icon: "file.png",
         label: function() {
-            return this.name || "puter.js node";
+            return this.name||"PuterJS";
+        },
+        oneditprepare: function() {
+            $("#node-input-action").on("change", function() {
+                var action = $("#node-input-action").val();
+                $(".form-row-action").hide();
+                $(".form-row-" + action).show();
+            });
         }
     });
 </script>
 
-<div class="form-row">
-    <label for="node-input-name">
-        <i class="fa fa-tag"></i> Name
-    </label>
-    <input type="text" id="node-input-name" placeholder="Node name">
-</div>
+<script type="text/html" data-template-name="puterjs">
+    <div class="form-row">
+        <label for="node-input-name"><i class="fa fa-tag"></i> Name</label>
+        <input type="text" id="node-input-name" placeholder="Name">
+    </div>
+    <div class="form-row">
+        <label for="node-input-action"><i class="fa fa-tasks"></i> Action</label>
+        <select id="node-input-action">
+            <option value="authenticate">Authenticate</option>
+            <option value="chat">Chat</option>
+            <option value="writeFile">Write File</option>
+            <option value="readFile">Read File</option>
+            <option value="setKV">Set Key-Value</option>
+            <option value="getKV">Get Key-Value</option>
+        </select>
+    </div>
+</script>
+
+<script type="text/html" data-help-name="puterjs">
+    <p>A node to interact with Puter.js API.</p>
+    <h3>Inputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The parameters for the selected action.</dd>
+    </dl>
+    <h3>Outputs</h3>
+    <dl class="message-properties">
+        <dt>payload
+            <span class="property-type">object</span>
+        </dt>
+        <dd>The result of the Puter.js API call.</dd>
+    </dl>
+    <h3>Details</h3>
+    <p>This node allows you to interact with various Puter.js API functions:</p>
+    <ul>
+        <li><b>Authenticate:</b> Sign in to Puter account</li>
+        <li><b>Chat:</b> Interact with AI chat</li>
+        <li><b>Write File:</b> Write content to a file in Puter cloud storage</li>
+        <li><b>Read File:</b> Read content from a file in Puter cloud storage</li>
+        <li><b>Set Key-Value:</b> Set a key-value pair in Puter key-value store</li>
+        <li><b>Get Key-Value:</b> Get a value from Puter key-value store</li>
+    </ul>
+</script>

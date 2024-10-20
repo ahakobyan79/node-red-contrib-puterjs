@@ -1,20 +1,13 @@
 {
-  "name": "node-red-contrib-puterjs",
-  "version": "1.0.0",
-  "description": "A Node-RED node for integrating Puter.js functionalities",
-  "main": "src/puterjs.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "author": "Anri Hakobyan",
-  "license": "MIT",
-  "dependencies": {
-    "node-red": ">=1.0.0",
-    "axios": "^0.21.1"
-  },
-  "node-red": {
-    "nodes": {
-      "puterjs": "src/puterjs.js"
+    "name": "node-red-contrib-puterjs",
+    "version": "0.1.0",
+    "description": "Node-RED node for Puter.js API integration",
+    "dependencies": {
+        "axios": "^0.21.1"
+    },
+    "node-red": {
+        "nodes": {
+            "puterjs": "src/puterjs.js"
+        }
     }
-  }
 }
